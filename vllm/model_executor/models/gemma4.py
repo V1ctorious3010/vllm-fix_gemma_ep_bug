@@ -21,7 +21,9 @@
 from collections.abc import Iterable
 from dataclasses import replace
 from itertools import islice
-
+from vllm.model_executor.models.interfaces import (
+    is_mixture_of_experts,
+)
 import regex as re
 import torch
 from torch import nn
@@ -1545,7 +1547,6 @@ class Gemma4ForCausalLM(
             vllm_config=vllm_config,
             prefix=maybe_prefix(prefix, "model"),
         )
-
         self.lm_head = ParallelLMHead(
             config.vocab_size,
             config.hidden_size,
@@ -1589,6 +1590,7 @@ class Gemma4ForCausalLM(
         self.num_expert_groups = 1
         self.num_shared_experts = 0
         self.num_redundant_experts = 0
+
 
     def embed_input_ids(self, input_ids: torch.Tensor) -> torch.Tensor:
         return self.model.embed_input_ids(input_ids)

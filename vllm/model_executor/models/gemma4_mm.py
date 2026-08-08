@@ -68,6 +68,7 @@ from .interfaces import (
     MultiModalEmbeddings,
     SupportsEagle3,
     SupportsLoRA,
+    MixtureOfExperts,
     SupportsMultiModal,
     SupportsPP,
 )
@@ -916,7 +917,7 @@ class Gemma4MultimodalEmbedder(nn.Module):
 class Gemma4ForConditionalGeneration(
     nn.Module,
     SupportsMultiModal,
-    SupportsPP,
+    SupportsPP,    
     SupportsLoRA,
     SupportsEagle3,
 ):
@@ -1029,6 +1030,24 @@ class Gemma4ForConditionalGeneration(
     # ------------------------------------------------------------------ #
     # Input parsing
     # ------------------------------------------------------------------ #
+
+    def set_eplb_state(
+        self,
+        expert_load_view: torch.Tensor,
+        logical_to_physical_map: torch.Tensor,
+        logical_replica_count: torch.Tensor,
+    ):
+        self.language_model.set_eplb_state(
+            expert_load_view, logical_to_physical_map, logical_replica_count
+        )
+        self.expert_weights = self.language_model.expert_weights
+
+    def update_physical_experts_metadata(
+        self, num_physical_experts: int, num_local_physical_experts: int
+    ):
+        self.language_model.update_physical_experts_metadata(
+            num_physical_experts, num_local_physical_experts
+        )
 
     def _parse_and_validate_image_input(
         self, **kwargs: object
